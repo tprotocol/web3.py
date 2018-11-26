@@ -163,6 +163,28 @@ def is_encodable(_type, value):
     if not isinstance(_type, str):
         raise ValueError("is_encodable only accepts type strings")
 
+    if _type[0] == "(":  # it's a tuple. check encodability of each component
+        components = _type.strip("()").split(",")
+        if not any(
+            [isinstance(value, collection) for collection in [list, tuple]]
+        ):
+            return False
+
+        if len(components) != len(value):
+            return False
+
+            raise ValueError(
+                "Tuple type {} does not have corresponding data in value {}"
+                .format(_type, value)
+            )
+
+        all_are_encodable = True  # assume until proven otherwise
+        for i in range(0, len(components)):
+            all_are_encodable = all_are_encodable and is_encodable(
+                components[i], value[i]
+            )
+        return all_are_encodable
+
     base, sub, arrlist = process_type(_type)
 
     if arrlist:
