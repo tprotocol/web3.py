@@ -128,8 +128,47 @@ def find_matching_fn_abi(abi, fn_identifier=None, args=None, kwargs=None):
         raise ValidationError(message)
 
 
+def expand_abi_tuple_type(abi):
+    """Converts an ABI tuple type to the format expected by eth_abi.
+
+    >>> expand_abi_tuple_type(
+    ...     {
+    ...         'components': [
+    ...             {'name': 'makerAddress', 'type': 'address'},
+    ...             {'name': 'takerAddress', 'type': 'address'},
+    ...             {'name': 'feeRecipientAddress', 'type': 'address'},
+    ...             {'name': 'senderAddress', 'type': 'address'},
+    ...             {'name': 'makerAssetAmount', 'type': 'uint256'},
+    ...             {'name': 'takerAssetAmount', 'type': 'uint256'},
+    ...             {'name': 'makerFee', 'type': 'uint256'},
+    ...             {'name': 'takerFee', 'type': 'uint256'},
+    ...             {'name': 'expirationTimeSeconds', 'type': 'uint256'},
+    ...             {'name': 'salt', 'type': 'uint256'},
+    ...             {'name': 'makerAssetData', 'type': 'bytes'},
+    ...             {'name': 'takerAssetData', 'type': 'bytes'},
+    ...         ],
+    ...         'name': 'order',
+    ...         'type': 'tuple',
+    ...     }
+    ... )
+    '(address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,bytes,bytes)'
+    """
+    if abi["type"] != "tuple":
+        return abi["type"]
+
+    component_types = [
+        expand_abi_tuple_type(component) for component in abi["components"]
+    ]
+
+    return "(" + ",".join(component_types) + ")"
+
+
 def encode_abi(web3, abi, arguments, data=None):
     argument_types = get_abi_input_types(abi)
+
+    for i in range(0, len(argument_types)):
+        if argument_types[i] == 'tuple':
+            argument_types[i] = expand_abi_tuple_type(abi['inputs'][i])
 
     if not check_if_arguments_can_be_encoded(abi, arguments, {}):
         raise TypeError(
