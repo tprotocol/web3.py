@@ -598,6 +598,9 @@ class ABITypedData(namedtuple('ABITypedData', 'abi_type, data')):
 
 
 def abi_sub_tree(data_type, data_value):
+    if data_type[0] == "(" and isinstance(data_value, tuple):
+        return ABITypedData([data_type, data_value])
+
     if data_type is None:
         return ABITypedData([None, data_value])
 
