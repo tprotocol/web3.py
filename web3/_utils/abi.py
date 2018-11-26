@@ -568,8 +568,13 @@ def data_tree_map(func, data_tree):
     receive two args: abi_type, and data
     '''
     def map_to_typed_data(elements):
-        if isinstance(elements, ABITypedData) and elements.abi_type is not None:
-            return ABITypedData(func(*elements))
+        if isinstance(elements, str) and elements[0] == "(":
+            return elements
+        elif isinstance(elements, ABITypedData):
+            if elements.abi_type[0] == "(":
+                return elements
+            elif elements.abi_type is not None:
+                return ABITypedData(func(*elements))
         else:
             return elements
     return recursive_map(map_to_typed_data, data_tree)
