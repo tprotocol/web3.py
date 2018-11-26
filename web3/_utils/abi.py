@@ -216,6 +216,32 @@ def check_if_arguments_can_be_encoded(function_abi, args, kwargs):
 
     types = get_abi_input_types(function_abi)
 
+    # expand tuples into the format expected by eth_abi, eg "(uint256,uint256)"
+    # for type and [0,1] for argument.  types is a list, so modify in place,
+    # but arguments is a tuple (immutable) so rebuild it.
+    new_arguments = tuple()
+    for i in range(0, len(arguments)):
+        if types[i] == "tuple":
+            tuple_type = "("
+            tuple_value = tuple()
+            for j in range(0, len(function_abi['inputs'][i]['components'])):
+                component_type = function_abi['inputs'][i]['components'][j]['type']
+                tuple_type += component_type + ","
+                if isinstance(arguments[i], dict):
+                    component_name = function_abi['inputs'][i]['components'][j]['name']
+                    tuple_value += (arguments[i][component_name],)
+                elif isinstance(arguments[i], tuple):
+                    tuple_value += (arguments[i][j],)
+                else:
+                    raise TypeError(
+                        "Unknown value type {} for ABI type 'tuple'"
+                        .format(type(arguments[i]))
+                    )
+            tuple_type = tuple_type.rstrip(",") + ")"
+            types[i] = tuple_type
+            new_arguments += (tuple_value,)
+    arguments = new_arguments
+
     return all(
         is_encodable(_type, arg)
         for _type, arg in zip(types, arguments)
