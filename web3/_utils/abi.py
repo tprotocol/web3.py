@@ -54,11 +54,23 @@ def get_abi_input_types(abi):
         return [arg['type'] for arg in abi['inputs']]
 
 
+def collapse_abi_tuple_type(abi_type):
+    """Collapse an ABI type to its (type,type) representation."""
+    if isinstance(abi_type["type"], str) and abi_type["type"] != 'tuple':
+        return abi_type["type"]
+
+    return (
+        "("
+        + ",".join([component["type"] for component in abi_type["components"]])
+        + ")"
+    )
+
+
 def get_abi_output_types(abi):
     if abi['type'] == 'fallback':
         return []
     else:
-        return [arg['type'] for arg in abi['outputs']]
+        return [collapse_abi_tuple_type(arg) for arg in abi['outputs']]
 
 
 def get_abi_input_names(abi):
