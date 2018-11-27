@@ -571,7 +571,10 @@ def data_tree_map(func, data_tree):
         if isinstance(elements, str) and elements[0] == "(":
             return elements
         elif isinstance(elements, ABITypedData):
-            if elements.abi_type[0] == "(":
+            if (
+                isinstance(elements.abi_type, str)
+                and elements.abi_type[0] == "("
+            ):
                 return elements
             elif elements.abi_type is not None:
                 return ABITypedData(func(*elements))
@@ -603,7 +606,11 @@ class ABITypedData(namedtuple('ABITypedData', 'abi_type, data')):
 
 
 def abi_sub_tree(data_type, data_value):
-    if data_type[0] == "(" and isinstance(data_value, tuple):
+    if (
+        isinstance(data_type, str)
+        and data_type[0] == "("
+        and isinstance(data_value, tuple)
+    ):
         return ABITypedData([data_type, data_value])
 
     if data_type is None:
