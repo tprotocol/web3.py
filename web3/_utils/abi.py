@@ -60,9 +60,9 @@ def collapse_abi_tuple_type(abi_type):
         return abi_type["type"]
 
     return (
-        "("
-        + ",".join([component["type"] for component in abi_type["components"]])
-        + ")"
+        "(" +
+        ",".join([component["type"] for component in abi_type["components"]]) +
+        ")"
     )
 
 
@@ -274,6 +274,8 @@ def check_if_arguments_can_be_encoded(function_abi, args, kwargs):
             tuple_type = tuple_type.rstrip(",") + ")"
             types[i] = tuple_type
             new_arguments += (tuple_value,)
+        else:
+            new_arguments += (arguments[i],)
     arguments = new_arguments
 
     return all(
@@ -584,8 +586,8 @@ def data_tree_map(func, data_tree):
             return elements
         elif isinstance(elements, ABITypedData):
             if (
-                isinstance(elements.abi_type, str)
-                and elements.abi_type[0] == "("
+                isinstance(elements.abi_type, str) and
+                elements.abi_type[0] == "("
             ):
                 return elements
             elif elements.abi_type is not None:
@@ -618,9 +620,9 @@ class ABITypedData(namedtuple('ABITypedData', 'abi_type, data')):
 
 def abi_sub_tree(data_type, data_value):
     if (
-        isinstance(data_type, str)
-        and data_type[0] == "("
-        and isinstance(data_value, tuple)
+        isinstance(data_type, str) and
+        data_type[0] == "(" and
+        isinstance(data_value, tuple)
     ):
         return ABITypedData([data_type, data_value])
 
