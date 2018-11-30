@@ -2,14 +2,14 @@
 import pytest
 
 from web3._utils.abi import (
-    abi_data_tree,
     ABITypedData,
+    abi_data_tree,
     data_tree_map,
     map_abi_data,
 )
 from web3._utils.normalizers import (
-    addresses_checksummed,
     BASE_RETURN_NORMALIZERS,
+    addresses_checksummed,
 )
 
 
