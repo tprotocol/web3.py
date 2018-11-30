@@ -582,7 +582,11 @@ def data_tree_map(func, data_tree):
     receive two args: abi_type, and data
     '''
     def map_to_typed_data(elements):
-        if isinstance(elements, str) and elements[0] == "(":
+        if (
+            isinstance(elements, str) and
+            len(elements) > 0 and
+            elements[0] == "("
+        ):
             return elements
         elif isinstance(elements, ABITypedData):
             if (
