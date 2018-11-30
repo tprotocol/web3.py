@@ -590,8 +590,7 @@ def data_tree_map(func, data_tree):
                 return elements
             elif elements.abi_type is not None:
                 return ABITypedData(func(*elements))
-        else:
-            return elements
+        return elements
     return recursive_map(map_to_typed_data, data_tree)
 
 

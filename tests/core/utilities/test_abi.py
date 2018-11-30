@@ -3,9 +3,12 @@ import pytest
 
 from web3._utils.abi import (
     abi_data_tree,
+    ABITypedData,
+    data_tree_map,
     map_abi_data,
 )
 from web3._utils.normalizers import (
+    addresses_checksummed,
     BASE_RETURN_NORMALIZERS,
 )
 
@@ -30,8 +33,44 @@ def test_abi_data_tree(types, data, expected):
 
 
 @pytest.mark.parametrize(
+    'func, data_tree, expected',
+    [
+        (
+            addresses_checksummed,
+            [
+                ABITypedData(
+                    [
+                        'address',
+                        b'\xf2\xe2F\xbbv\xdf\x87l\xef\x8b8\xae\x84\x13\x0fOU\xde9[',
+                    ]
+                ),
+                ABITypedData([None, 'latest'])
+            ],
+            [
+                ABITypedData(
+                    [
+                        'address',
+                        '0xF2E246BB76DF876Cef8b38ae84130F4F55De395b',
+                    ]
+                ),
+                ABITypedData([None, 'latest'])
+            ]
+        )
+    ],
+)
+def test_data_tree_map(func, data_tree, expected):
+    assert data_tree_map(func, data_tree) == expected
+
+
+@pytest.mark.parametrize(
     'types, data, funcs, expected',
     [
+        (  # like web3._utils.rpc_abi.RPC_ABIS['eth_getCode']
+            ['address', None],
+            [b'\xf2\xe2F\xbbv\xdf\x87l\xef\x8b8\xae\x84\x13\x0fOU\xde9[', 'latest'],
+            BASE_RETURN_NORMALIZERS,
+            ['0xF2E246BB76DF876Cef8b38ae84130F4F55De395b', 'latest'],
+        ),
         (
             ["bool[2]", "int256"],
             [[True, False], 9876543210],
