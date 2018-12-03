@@ -54,7 +54,7 @@ def get_abi_input_types(abi):
         return [arg['type'] for arg in abi['inputs']]
 
 
-def collapse_abi_tuple_type(abi_type):
+def collapse_if_tuple(abi_type):
     """Collapse an ABI type to its (type,type) representation."""
     if isinstance(abi_type["type"], str) and abi_type["type"] != 'tuple':
         return abi_type["type"]
@@ -70,7 +70,7 @@ def get_abi_output_types(abi):
     if abi['type'] == 'fallback':
         return []
     else:
-        return [collapse_abi_tuple_type(arg) for arg in abi['outputs']]
+        return [collapse_if_tuple(arg) for arg in abi['outputs']]
 
 
 def get_abi_input_names(abi):
@@ -177,25 +177,22 @@ def is_encodable(_type, value):
 
     if _type[0] == "(":  # it's a tuple. check encodability of each component
         components = _type.strip("()").split(",")
+        values = value
         if not any(
-            [isinstance(value, collection) for collection in [list, tuple]]
+            [isinstance(values, collection) for collection in [list, tuple]]
         ):
             return False
 
-        if len(components) != len(value):
+        if len(components) != len(values):
             return False
 
-            raise ValueError(
-                "Tuple type {} does not have corresponding data in value {}"
-                .format(_type, value)
-            )
-
-        all_are_encodable = True  # assume until proven otherwise
-        for i in range(0, len(components)):
-            all_are_encodable = all_are_encodable and is_encodable(
-                components[i], value[i]
-            )
-        return all_are_encodable
+        return all(
+            [
+                is_encodable(component, value)
+                for component, value
+                in zip(components, values)
+            ]
+        )
 
     base, sub, arrlist = process_type(_type)
 
