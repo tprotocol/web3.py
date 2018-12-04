@@ -64,24 +64,15 @@ def collapse_if_tuple(abi_type):
     >>> collapse_if_tuple(
     ...     {
     ...         'components': [
-    ...             {'name': 'makerAddress', 'type': 'address'},
-    ...             {'name': 'takerAddress', 'type': 'address'},
-    ...             {'name': 'feeRecipientAddress', 'type': 'address'},
-    ...             {'name': 'senderAddress', 'type': 'address'},
-    ...             {'name': 'makerAssetAmount', 'type': 'uint256'},
-    ...             {'name': 'takerAssetAmount', 'type': 'uint256'},
-    ...             {'name': 'makerFee', 'type': 'uint256'},
-    ...             {'name': 'takerFee', 'type': 'uint256'},
-    ...             {'name': 'expirationTimeSeconds', 'type': 'uint256'},
-    ...             {'name': 'salt', 'type': 'uint256'},
-    ...             {'name': 'makerAssetData', 'type': 'bytes'},
-    ...             {'name': 'takerAssetData', 'type': 'bytes'},
+    ...             {'name': 'anAddress', 'type': 'address'},
+    ...             {'name': 'anInt', 'type': 'uint256'},
+    ...             {'name': 'someBytes', 'type': 'bytes'},
     ...         ],
     ...         'name': 'order',
     ...         'type': 'tuple',
     ...     }
     ... )
-    '(address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,bytes,bytes)'
+    '(address,uint256,bytes)'
     """
     if isinstance(abi_type["type"], str) and abi_type["type"] != 'tuple':
         return abi_type["type"]
