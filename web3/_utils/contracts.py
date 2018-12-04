@@ -25,6 +25,7 @@ from web3._utils.abi import (
     filter_by_name,
     filter_by_type,
     get_abi_input_types,
+    get_abi_inputs,
     get_fallback_func_abi,
     map_abi_data,
     merge_args_and_kwargs,
@@ -249,23 +250,7 @@ def get_function_info(fn_name, contract_abi=None, fn_abi=None, args=None, kwargs
 
     fn_arguments = merge_args_and_kwargs(fn_abi, args, kwargs)
 
-    # expand tuples into the format expected by eth_abi, eg "(uint256,uint256)"
-    # for type and [0,1] for argument.  types is a list, so modify in place,
-    # but arguments is a tuple (immutable) so rebuild it.
-    arguments = fn_arguments
-    types = [an_input['type'] for an_input in fn_abi['inputs']]
-    new_arguments = tuple()
-    for i in range(0, len(arguments)):
-        if types[i] == "tuple":
-            new_argument = tuple(
-                fn_arguments[i][component['name']]
-                for component
-                in fn_abi['inputs'][i]['components']
-            )
-            new_arguments += (new_argument,)
-        else:
-            new_arguments += (arguments[i],)
-    fn_arguments = new_arguments
+    _, fn_arguments = get_abi_inputs(fn_abi, fn_arguments)
 
     return fn_abi, fn_selector, fn_arguments
 
