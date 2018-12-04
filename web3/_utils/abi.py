@@ -51,19 +51,46 @@ def get_abi_input_types(abi):
     if 'inputs' not in abi and abi['type'] == 'fallback':
         return []
     else:
-        return [arg['type'] for arg in abi['inputs']]
+        return [collapse_if_tuple(abi_input) for abi_input in abi['inputs']]
 
 
 def collapse_if_tuple(abi_type):
-    """Collapse an ABI type to its (type,type) representation."""
+    """Converts an ABI tuple type to the format expected by eth_abi.
+
+    Returns the type Returns the parenthesized list of tuple component types,
+    as expected by eth_abi.  If `abi_type` is not a tuple, just returns its
+    type.
+
+    >>> collapse_if_tuple(
+    ...     {
+    ...         'components': [
+    ...             {'name': 'makerAddress', 'type': 'address'},
+    ...             {'name': 'takerAddress', 'type': 'address'},
+    ...             {'name': 'feeRecipientAddress', 'type': 'address'},
+    ...             {'name': 'senderAddress', 'type': 'address'},
+    ...             {'name': 'makerAssetAmount', 'type': 'uint256'},
+    ...             {'name': 'takerAssetAmount', 'type': 'uint256'},
+    ...             {'name': 'makerFee', 'type': 'uint256'},
+    ...             {'name': 'takerFee', 'type': 'uint256'},
+    ...             {'name': 'expirationTimeSeconds', 'type': 'uint256'},
+    ...             {'name': 'salt', 'type': 'uint256'},
+    ...             {'name': 'makerAssetData', 'type': 'bytes'},
+    ...             {'name': 'takerAssetData', 'type': 'bytes'},
+    ...         ],
+    ...         'name': 'order',
+    ...         'type': 'tuple',
+    ...     }
+    ... )
+    '(address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,bytes,bytes)'
+    """
     if isinstance(abi_type["type"], str) and abi_type["type"] != 'tuple':
         return abi_type["type"]
 
-    return (
-        "(" +
-        ",".join([component["type"] for component in abi_type["components"]]) +
-        ")"
-    )
+    component_types = [
+        collapse_if_tuple(component) for component in abi_type["components"]
+    ]
+
+    return "(" + ",".join(component_types) + ")"
 
 
 def get_abi_output_types(abi):
