@@ -274,97 +274,30 @@ def get_abi_inputs(function_abi, arg_values):
     tuple representation expected by eth_abi.
 
     >>> get_abi_inputs(
-    ...     {'constant': True,
-    ...      'inputs': [{'components': [{'name': 'makerAddress', 'type': 'address'},
-    ...                                 {'name': 'takerAddress', 'type': 'address'},
-    ...                                 {'name': 'feeRecipientAddress', 'type': 'address'},
-    ...                                 {'name': 'senderAddress', 'type': 'address'},
-    ...                                 {'name': 'makerAssetAmount', 'type': 'uint256'},
-    ...                                 {'name': 'takerAssetAmount', 'type': 'uint256'},
-    ...                                 {'name': 'makerFee', 'type': 'uint256'},
-    ...                                 {'name': 'takerFee', 'type': 'uint256'},
-    ...                                 {'name': 'expirationTimeSeconds',
-    ...                                  'type': 'uint256'},
-    ...                                 {'name': 'salt', 'type': 'uint256'},
-    ...                                 {'name': 'makerAssetData', 'type': 'bytes'},
-    ...                                 {'name': 'takerAssetData', 'type': 'bytes'}],
-    ...                  'name': 'order',
-    ...                  'type': 'tuple'}],
-    ...      'name': 'getOrderInfo',
-    ...      'outputs': [{'components': [{'name': 'orderStatus', 'type': 'uint8'},
-    ...                                  {'name': 'orderHash', 'type': 'bytes32'},
-    ...                                  {'name': 'orderTakerAssetFilledAmount',
-    ...                                   'type': 'uint256'}],
-    ...                   'name': 'orderInfo',
-    ...                   'type': 'tuple'}],
-    ...      'payable': False,
-    ...      'stateMutability': 'view',
-    ...      'type': 'function'},
-    ...     ({'expirationTimeSeconds': 12345,
-    ...       'feeRecipientAddress': '0x0000000000000000000000000000000000000000',
-    ...       'makerAddress': '0x0000000000000000000000000000000000000000',
-    ...       'makerAssetAmount': 1000000000000000000,
-    ...       'makerAssetData': b'00'*20,
-    ...       'makerFee': 0,
-    ...       'salt': 12345,
-    ...       'senderAddress': '0x0000000000000000000000000000000000000000',
-    ...       'takerAddress': '0x0000000000000000000000000000000000000000',
-    ...       'takerAssetAmount': 1000000000000000000,
-    ...       'takerAssetData': b'00'*20,
-    ...       'takerFee': 0},)
+    ...     {
+    ...         'inputs': [
+    ...             {
+    ...                 'components': [
+    ...                     {'name': 'anAddress', 'type': 'address'},
+    ...                     {'name': 'anInt', 'type': 'uint256'},
+    ...                     {'name': 'someBytes', 'type': 'bytes'}
+    ...                 ],
+    ...                 'name': 'arg',
+    ...                 'type': 'tuple'
+    ...             }
+    ...         ],
+    ...         'type': 'function'
+    ...     },
+    ...     (
+    ...         {
+    ...             'anInt': 12345,
+    ...             'anAddress': '0x0000000000000000000000000000000000000000',
+    ...             'someBytes': b'0000',
+    ...         },
+    ...     ),
     ... )
-    (['(address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,bytes,bytes)'], (('0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', 1000000000000000000, 1000000000000000000, 0, 0, 12345, 12345, b'0000000000000000000000000000000000000000', b'0000000000000000000000000000000000000000'),))
-
-    >>> get_abi_inputs(
-    ...     {'constant': True,
-    ...      'inputs': [{'components': [{'name': 'makerAddress', 'type': 'address'},
-    ...                                 {'name': 'takerAddress', 'type': 'address'},
-    ...                                 {'name': 'feeRecipientAddress', 'type': 'address'},
-    ...                                 {'name': 'senderAddress', 'type': 'address'},
-    ...                                 {'name': 'makerAssetAmount', 'type': 'uint256'},
-    ...                                 {'name': 'takerAssetAmount', 'type': 'uint256'},
-    ...                                 {'name': 'makerFee', 'type': 'uint256'},
-    ...                                 {'name': 'takerFee', 'type': 'uint256'},
-    ...                                 {'name': 'expirationTimeSeconds',
-    ...                                  'type': 'uint256'},
-    ...                                 {'name': 'salt', 'type': 'uint256'},
-    ...                                 {'name': 'makerAssetData', 'type': 'bytes'},
-    ...                                 {'name': 'takerAssetData', 'type': 'bytes'}],
-    ...                  'name': 'order',
-    ...                  'type': 'tuple'}],
-    ...      'name': 'getOrderInfo',
-    ...      'outputs': [{'components': [{'name': 'orderStatus', 'type': 'uint8'},
-    ...                                  {'name': 'orderHash', 'type': 'bytes32'},
-    ...                                  {'name': 'orderTakerAssetFilledAmount',
-    ...                                   'type': 'uint256'}],
-    ...                   'name': 'orderInfo',
-    ...                   'type': 'tuple'}],
-    ...      'payable': False,
-    ...      'stateMutability': 'view',
-    ...      'type': 'function'},
-    ...     (('0x0000000000000000000000000000000000000000',
-    ...       '0x0000000000000000000000000000000000000000',
-    ...       '0x0000000000000000000000000000000000000000',
-    ...       '0x0000000000000000000000000000000000000000',
-    ...       1000000000000000000,
-    ...       1000000000000000000,
-    ...       0,
-    ...       0,
-    ...       12345,
-    ...       12345,
-    ...       b'0000000000000000000000000000000000000000',
-    ...       b'0000000000000000000000000000000000000000'),),
-    ... )
-    (['(address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,bytes,bytes)'], (('0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', 1000000000000000000, 1000000000000000000, 0, 0, 12345, 12345, b'0000000000000000000000000000000000000000', b'0000000000000000000000000000000000000000'),))
-
-    >>> get_abi_inputs(
-    ...     {'payable': False,
-    ...      'stateMutability': 'nonpayable',
-    ...      'type': 'fallback'},
-    ...     (),
-    ... )
-    ([], ())
-    """  # noqa: E501 (line too long)
+    (['(address,uint256,bytes)'], (('0x0000000000000000000000000000000000000000', 12345, b'0000'),))
+    """
     if "inputs" not in function_abi:
         return ([], ())
 

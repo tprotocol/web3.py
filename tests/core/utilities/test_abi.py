@@ -5,6 +5,7 @@ from web3._utils.abi import (
     ABITypedData,
     abi_data_tree,
     data_tree_map,
+    get_abi_inputs,
     map_abi_data,
 )
 from web3._utils.normalizers import (
@@ -96,3 +97,113 @@ def test_data_tree_map(func, data_tree, expected):
 )
 def test_map_abi_data(types, data, funcs, expected):
     assert map_abi_data(funcs, types, data) == expected
+
+
+GET_ORDER_INFO_FN_ABI = {
+    'constant': True,
+    'inputs': [
+        {
+            'components': [
+                {'name': 'makerAddress', 'type': 'address'},
+                {'name': 'takerAddress', 'type': 'address'},
+                {'name': 'feeRecipientAddress', 'type': 'address'},
+                {'name': 'senderAddress', 'type': 'address'},
+                {'name': 'makerAssetAmount', 'type': 'uint256'},
+                {'name': 'takerAssetAmount', 'type': 'uint256'},
+                {'name': 'makerFee', 'type': 'uint256'},
+                {'name': 'takerFee', 'type': 'uint256'},
+                {'name': 'expirationTimeSeconds', 'type': 'uint256'},
+                {'name': 'salt', 'type': 'uint256'},
+                {'name': 'makerAssetData', 'type': 'bytes'},
+                {'name': 'takerAssetData', 'type': 'bytes'}
+            ],
+            'name': 'order',
+            'type': 'tuple'
+        },
+    ],
+    'name': 'getOrderInfo',
+    'outputs': [
+        {
+            'components': [
+                {'name': 'orderStatus', 'type': 'uint8'},
+                {'name': 'orderHash', 'type': 'bytes32'},
+                {'name': 'orderTakerAssetFilledAmount', 'type': 'uint256'}
+            ],
+            'name': 'orderInfo',
+            'type': 'tuple'
+        }
+    ],
+    'payable': False,
+    'stateMutability': 'view',
+    'type': 'function'
+}
+
+GET_ORDER_INFO_FN_ARGS_DICT = (
+    {
+        'expirationTimeSeconds': 12345,
+        'feeRecipientAddress': '0x0000000000000000000000000000000000000000',
+        'makerAddress': '0x0000000000000000000000000000000000000000',
+        'makerAssetAmount': 1000000000000000000,
+        'makerAssetData': b'00' * 20,
+        'makerFee': 0,
+        'salt': 12345,
+        'senderAddress': '0x0000000000000000000000000000000000000000',
+        'takerAddress': '0x0000000000000000000000000000000000000000',
+        'takerAssetAmount': 1000000000000000000,
+        'takerAssetData': b'00' * 20,
+        'takerFee': 0
+    },
+)
+
+GET_ORDER_INFO_FN_ARGS_TUPLE = (
+    (
+        '0x0000000000000000000000000000000000000000',
+        '0x0000000000000000000000000000000000000000',
+        '0x0000000000000000000000000000000000000000',
+        '0x0000000000000000000000000000000000000000',
+        1000000000000000000,
+        1000000000000000000,
+        0,
+        0,
+        12345,
+        12345,
+        b'0000000000000000000000000000000000000000',
+        b'0000000000000000000000000000000000000000'
+    ),
+)
+
+
+@pytest.mark.parametrize(
+    'function_abi, arg_values, expected',
+    [
+        (
+            GET_ORDER_INFO_FN_ABI,
+            GET_ORDER_INFO_FN_ARGS_DICT,
+            (
+                [
+                    '(address,address,address,address,uint256,uint256,uint256,uint256,uint256,' +
+                    'uint256,bytes,bytes)'
+                ],
+                GET_ORDER_INFO_FN_ARGS_TUPLE,
+            ),
+        ),
+        (
+            GET_ORDER_INFO_FN_ABI,
+            GET_ORDER_INFO_FN_ARGS_TUPLE,
+            (
+                [
+                    '(address,address,address,address,uint256,uint256,uint256,uint256,uint256,' +
+                    'uint256,bytes,bytes)'
+                ],
+                GET_ORDER_INFO_FN_ARGS_TUPLE,
+            ),
+        ),
+        (
+            {'payable': False, 'stateMutability': 'nonpayable', 'type': 'fallback'},
+            (),
+            ([], ()),
+        )
+    ]
+)
+def test_get_abi_inputs(function_abi, arg_values, expected):
+    assert get_abi_inputs(function_abi, arg_values) == expected
