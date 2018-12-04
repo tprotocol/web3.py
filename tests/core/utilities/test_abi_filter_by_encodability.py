@@ -69,7 +69,26 @@ GET_ORDER_INFO_ARGS = (
     'arguments,contract_abi',
     (
         (GET_ORDER_INFO_ARGS, GET_ORDER_INFO_ABI),
+        (
+            ('0x1111111111111111111111111111111111111111',),
+            [{'constant': True,
+              'inputs': [{'name': 'arg', 'type': 'address'}],
+              'name': 'reflect',
+              'outputs': [{'name': '', 'type': 'address'}],
+              'payable': False,
+              'stateMutability': 'pure',
+              'type': 'function'},
+             {'constant': True,
+              'inputs': [{'name': 'arg', 'type': 'address[]'}],
+              'name': 'reflect',
+              'outputs': [{'name': '', 'type': 'address[]'}],
+              'payable': False,
+              'stateMutability': 'pure',
+              'type': 'function'}],
+        ),
     )
 )
 def test_filter_by_encodability(arguments, contract_abi):
-    assert filter_by_encodability(arguments, {}, contract_abi) == contract_abi
+    filter_output = filter_by_encodability(arguments, {}, contract_abi)
+    assert len(filter_output) == 1
+    assert filter_output[0] in contract_abi

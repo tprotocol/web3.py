@@ -356,7 +356,18 @@ def get_abi_inputs(function_abi, arg_values):
     ...       b'0000000000000000000000000000000000000000'),),
     ... )
     (['(address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,bytes,bytes)'], (('0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', 1000000000000000000, 1000000000000000000, 0, 0, 12345, 12345, b'0000000000000000000000000000000000000000', b'0000000000000000000000000000000000000000'),))
+
+    >>> get_abi_inputs(
+    ...     {'payable': False,
+    ...      'stateMutability': 'nonpayable',
+    ...      'type': 'fallback'},
+    ...     (),
+    ... )
+    ([], ())
     """  # noqa: E501 (line too long)
+    if "inputs" not in function_abi:
+        return ([], ())
+
     new_types = []
     new_arguments = tuple()
     for abi_input, arg_value in zip(function_abi["inputs"], arg_values):
@@ -377,6 +388,7 @@ def get_abi_inputs(function_abi, arg_values):
             new_types.append("(" + ",".join(component_types) + ")")
             new_arguments += (tuple(component_values),)
         else:
+            new_types.append(abi_input["type"])
             new_arguments += (arg_value,)
     return new_types, new_arguments
 
