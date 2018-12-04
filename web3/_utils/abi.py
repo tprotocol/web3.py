@@ -236,6 +236,82 @@ def filter_by_encodability(args, kwargs, contract_abi):
     ]
 
 
+def get_abi_inputs(function_abi, arg_values):
+    """Similar to get_abi_input_types(), but gets values too.
+
+    Returns a zip of types and their corresponding argument values.
+    Importantly, looks in `function_abi` for tuples, and for any found, (a)
+    translates them from the ABI dict representation to the parenthesized type
+    list representation that's expected by eth_abi, and (b) translates their
+    corresponding arguments values from the python dict representation to the
+    tuple representation expected by eth_abi.
+
+    >>> get_abi_inputs(
+    ...     {'constant': True,
+    ...      'inputs': [{'components': [{'name': 'makerAddress', 'type': 'address'},
+    ...                                 {'name': 'takerAddress', 'type': 'address'},
+    ...                                 {'name': 'feeRecipientAddress', 'type': 'address'},
+    ...                                 {'name': 'senderAddress', 'type': 'address'},
+    ...                                 {'name': 'makerAssetAmount', 'type': 'uint256'},
+    ...                                 {'name': 'takerAssetAmount', 'type': 'uint256'},
+    ...                                 {'name': 'makerFee', 'type': 'uint256'},
+    ...                                 {'name': 'takerFee', 'type': 'uint256'},
+    ...                                 {'name': 'expirationTimeSeconds',
+    ...                                  'type': 'uint256'},
+    ...                                 {'name': 'salt', 'type': 'uint256'},
+    ...                                 {'name': 'makerAssetData', 'type': 'bytes'},
+    ...                                 {'name': 'takerAssetData', 'type': 'bytes'}],
+    ...                  'name': 'order',
+    ...                  'type': 'tuple'}],
+    ...      'name': 'getOrderInfo',
+    ...      'outputs': [{'components': [{'name': 'orderStatus', 'type': 'uint8'},
+    ...                                  {'name': 'orderHash', 'type': 'bytes32'},
+    ...                                  {'name': 'orderTakerAssetFilledAmount',
+    ...                                   'type': 'uint256'}],
+    ...                   'name': 'orderInfo',
+    ...                   'type': 'tuple'}],
+    ...      'payable': False,
+    ...      'stateMutability': 'view',
+    ...      'type': 'function'},
+    ...     ({'expirationTimeSeconds': 12345,
+    ...       'feeRecipientAddress': '0x0000000000000000000000000000000000000000',
+    ...       'makerAddress': '0x0000000000000000000000000000000000000000',
+    ...       'makerAssetAmount': 1000000000000000000,
+    ...       'makerAssetData': b'00'*20,
+    ...       'makerFee': 0,
+    ...       'salt': 12345,
+    ...       'senderAddress': '0x0000000000000000000000000000000000000000',
+    ...       'takerAddress': '0x0000000000000000000000000000000000000000',
+    ...       'takerAssetAmount': 1000000000000000000,
+    ...       'takerAssetData': b'00'*20,
+    ...       'takerFee': 0},)
+    ... )
+    (['(address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,bytes,bytes)'], (('0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', 1000000000000000000, 1000000000000000000, 0, 0, 12345, 12345, b'0000000000000000000000000000000000000000', b'0000000000000000000000000000000000000000'),))
+    """  # noqa: E501 (line too long)
+    new_types = []
+    new_arguments = tuple()
+    for abi_input, arg_value in zip(function_abi["inputs"], arg_values):
+        if abi_input["type"] == "tuple":
+            component_types = []
+            component_values = []
+            for component, value in zip(abi_input["components"], arg_value):
+                component_types.append(component["type"])
+                if isinstance(arg_value, dict):
+                    component_values.append(arg_value[component["name"]])
+                elif isinstance(arg_value, tuple):
+                    component_values.append((value,))
+                else:
+                    raise TypeError(
+                        "Unknown value type {} for ABI type 'tuple'"
+                        .format(type(arg_value))
+                    )
+            new_types.append("(" + ",".join(component_types) + ")")
+            new_arguments += (tuple(component_values),)
+        else:
+            new_arguments += (arg_value,)
+    return new_types, new_arguments
+
+
 def check_if_arguments_can_be_encoded(function_abi, args, kwargs):
     try:
         arguments = merge_args_and_kwargs(function_abi, args, kwargs)
@@ -245,35 +321,7 @@ def check_if_arguments_can_be_encoded(function_abi, args, kwargs):
     if len(function_abi.get('inputs', [])) != len(arguments):
         return False
 
-    types = get_abi_input_types(function_abi)
-
-    # expand tuples into the format expected by eth_abi, eg "(uint256,uint256)"
-    # for type and [0,1] for argument.  types is a list, so modify in place,
-    # but arguments is a tuple (immutable) so rebuild it.
-    new_arguments = tuple()
-    for i in range(0, len(arguments)):
-        if types[i] == "tuple":
-            tuple_type = "("
-            tuple_value = tuple()
-            for j in range(0, len(function_abi['inputs'][i]['components'])):
-                component_type = function_abi['inputs'][i]['components'][j]['type']
-                tuple_type += component_type + ","
-                if isinstance(arguments[i], dict):
-                    component_name = function_abi['inputs'][i]['components'][j]['name']
-                    tuple_value += (arguments[i][component_name],)
-                elif isinstance(arguments[i], tuple):
-                    tuple_value += (arguments[i][j],)
-                else:
-                    raise TypeError(
-                        "Unknown value type {} for ABI type 'tuple'"
-                        .format(type(arguments[i]))
-                    )
-            tuple_type = tuple_type.rstrip(",") + ")"
-            types[i] = tuple_type
-            new_arguments += (tuple_value,)
-        else:
-            new_arguments += (arguments[i],)
-    arguments = new_arguments
+    types, arguments = get_abi_inputs(function_abi, arguments)
 
     return all(
         is_encodable(_type, arg)
@@ -563,8 +611,8 @@ def abi_data_tree(types, data):
     As an example:
 
     >>> abi_data_tree(types=["bool[2]", "uint"], data=[[True, False], 0])
-    [("bool[2]", [("bool", True), ("bool", False)]), ("uint256", 0)]
-    '''
+    [ABITypedData(abi_type='bool[2]', data=[ABITypedData(abi_type='bool', data=True), ABITypedData(abi_type='bool', data=False)]), ABITypedData(abi_type='uint256', data=0)]
+    '''  # noqa: E501 (line too long)
     return [
         abi_sub_tree(data_type, data_value)
         for data_type, data_value
@@ -601,9 +649,11 @@ class ABITypedData(namedtuple('ABITypedData', 'abi_type, data')):
     '''
     This class marks data as having a certain ABI-type.
 
+    >>> addr1 = "0x" + "0" * 20
+    >>> addr2 = "0x" + "f" * 20
     >>> a1 = ABITypedData(['address', addr1])
     >>> a2 = ABITypedData(['address', addr2])
-    >>> addrs = ABITypedData(['address[]', [a1, a2])
+    >>> addrs = ABITypedData(['address[]', [addr1, addr2]])
 
     You can access the fields using tuple() interface, or with
     attributes:
