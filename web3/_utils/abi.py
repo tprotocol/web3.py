@@ -287,6 +287,48 @@ def get_abi_inputs(function_abi, arg_values):
     ...       'takerFee': 0},)
     ... )
     (['(address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,bytes,bytes)'], (('0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', 1000000000000000000, 1000000000000000000, 0, 0, 12345, 12345, b'0000000000000000000000000000000000000000', b'0000000000000000000000000000000000000000'),))
+
+    >>> get_abi_inputs(
+    ...     {'constant': True,
+    ...      'inputs': [{'components': [{'name': 'makerAddress', 'type': 'address'},
+    ...                                 {'name': 'takerAddress', 'type': 'address'},
+    ...                                 {'name': 'feeRecipientAddress', 'type': 'address'},
+    ...                                 {'name': 'senderAddress', 'type': 'address'},
+    ...                                 {'name': 'makerAssetAmount', 'type': 'uint256'},
+    ...                                 {'name': 'takerAssetAmount', 'type': 'uint256'},
+    ...                                 {'name': 'makerFee', 'type': 'uint256'},
+    ...                                 {'name': 'takerFee', 'type': 'uint256'},
+    ...                                 {'name': 'expirationTimeSeconds',
+    ...                                  'type': 'uint256'},
+    ...                                 {'name': 'salt', 'type': 'uint256'},
+    ...                                 {'name': 'makerAssetData', 'type': 'bytes'},
+    ...                                 {'name': 'takerAssetData', 'type': 'bytes'}],
+    ...                  'name': 'order',
+    ...                  'type': 'tuple'}],
+    ...      'name': 'getOrderInfo',
+    ...      'outputs': [{'components': [{'name': 'orderStatus', 'type': 'uint8'},
+    ...                                  {'name': 'orderHash', 'type': 'bytes32'},
+    ...                                  {'name': 'orderTakerAssetFilledAmount',
+    ...                                   'type': 'uint256'}],
+    ...                   'name': 'orderInfo',
+    ...                   'type': 'tuple'}],
+    ...      'payable': False,
+    ...      'stateMutability': 'view',
+    ...      'type': 'function'},
+    ...     (('0x0000000000000000000000000000000000000000',
+    ...       '0x0000000000000000000000000000000000000000',
+    ...       '0x0000000000000000000000000000000000000000',
+    ...       '0x0000000000000000000000000000000000000000',
+    ...       1000000000000000000,
+    ...       1000000000000000000,
+    ...       0,
+    ...       0,
+    ...       12345,
+    ...       12345,
+    ...       b'0000000000000000000000000000000000000000',
+    ...       b'0000000000000000000000000000000000000000'),),
+    ... )
+    (['(address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,bytes,bytes)'], (('0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000', 1000000000000000000, 1000000000000000000, 0, 0, 12345, 12345, b'0000000000000000000000000000000000000000', b'0000000000000000000000000000000000000000'),))
     """  # noqa: E501 (line too long)
     new_types = []
     new_arguments = tuple()
@@ -299,7 +341,7 @@ def get_abi_inputs(function_abi, arg_values):
                 if isinstance(arg_value, dict):
                     component_values.append(arg_value[component["name"]])
                 elif isinstance(arg_value, tuple):
-                    component_values.append((value,))
+                    component_values.append(value)
                 else:
                     raise TypeError(
                         "Unknown value type {} for ABI type 'tuple'"
