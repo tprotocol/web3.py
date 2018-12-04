@@ -196,9 +196,7 @@ def is_encodable(_type, value):
     if _type[0] == "(":  # it's a tuple. check encodability of each component
         components = _type.strip("()").split(",")
         values = value
-        if not any(
-            [isinstance(values, collection) for collection in [list, tuple]]
-        ):
+        if not is_list_like(values):
             return False
 
         if len(components) != len(values):
