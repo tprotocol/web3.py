@@ -4,6 +4,7 @@ import pytest
 from web3._utils.abi import (
     ABITypedData,
     abi_data_tree,
+    collapse_if_tuple,
     data_tree_map,
     get_abi_inputs,
     map_abi_data,
@@ -207,3 +208,43 @@ GET_ORDER_INFO_FN_ARGS_TUPLE = (
 )
 def test_get_abi_inputs(function_abi, arg_values, expected):
     assert get_abi_inputs(function_abi, arg_values) == expected
+
+
+@pytest.mark.parametrize(
+    'abi_type, expected',
+    [
+        (
+            {
+                'components': [
+                    {'name': 'anAddress', 'type': 'address'},
+                    {'name': 'anInt', 'type': 'uint256'},
+                    {'name': 'someBytes', 'type': 'bytes'},
+                ],
+                'name': 'order',
+                'type': 'tuple',
+            },
+            '(address,uint256,bytes)'
+        ),
+        (
+            {
+                'components': [
+                    {'name': 'anAddress', 'type': 'address'},
+                    {'name': 'anInt', 'type': 'uint256'},
+                    {'name': 'someBytes', 'type': 'bytes'},
+                    {
+                        'name': 'aNestedTuple',
+                        'type': 'tuple',
+                        'components': [
+                            {'name': 'anotherInt', 'type': 'uint256'},
+                        ]
+                    }
+                ],
+                'name': 'order',
+                'type': 'tuple',
+            },
+            '(address,uint256,bytes,(uint256))'
+        ),
+    ]
+)
+def test_collapse_if_tuple(abi_type, expected):
+    assert collapse_if_tuple(abi_type) == expected
