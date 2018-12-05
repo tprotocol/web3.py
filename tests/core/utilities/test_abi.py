@@ -1,6 +1,8 @@
 
+import doctest
 import pytest
 
+import web3._utils.abi
 from web3._utils.abi import (
     ABITypedData,
     abi_data_tree,
@@ -263,3 +265,11 @@ def test_collapse_if_tuple(abi_type, expected):
 )
 def test_get_tuple_component_types(tuple_type, expected):
     assert get_tuple_component_types(tuple_type) == expected
+
+
+def test_docstrings(capsys):
+    """Exercise docstrings in the web3._utils.abi module."""
+    # disable stdout capture so failed tests will show why they failed
+    with capsys.disabled():
+        failure_count, _ = doctest.testmod(web3._utils.abi)
+        assert failure_count == 0

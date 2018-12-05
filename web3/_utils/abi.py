@@ -190,8 +190,23 @@ except ImportError:
 
 
 def get_tuple_component_types(tuple_type):
+    """Return a list of the types of the components of the given tuple.
+
+    Expects string representation of the tuple, a parenthesized,
+    comma-separated list of the types of the tuples components.  Returns a list
+    representation of those component types.
+
+    >>> get_tuple_component_types('(uint256,uint256)')
+    ['uint256', 'uint256']
+
+    Properly handles the case where some component types are themselves tuples.
+
+    >>> get_tuple_component_types('(uint256,(address,address),uint256)')
+    ['uint256', '(address,address)', 'uint256']
+    """
     component_types = []
-    components_csv = tuple_type[1:-1]
+    components_csv = tuple_type[1:-1]  # strip off expected outer parentheses
+    # consider case of inner parentheses:
     open_paren_index = components_csv.find("(")
     close_paren_index = components_csv.rfind(")")
     if open_paren_index != -1 and close_paren_index != -1:
@@ -204,6 +219,7 @@ def get_tuple_component_types(tuple_type):
         if after_close_paren:
             component_types.extend(after_close_paren.strip(",").split(","))
     else:
+        # there are no inner parentheses
         component_types = components_csv.split(",")
     return component_types
 
