@@ -7,6 +7,7 @@ from web3._utils.abi import (
     collapse_if_tuple,
     data_tree_map,
     get_abi_inputs,
+    get_tuple_component_types,
     map_abi_data,
 )
 from web3._utils.normalizers import (
@@ -248,3 +249,17 @@ def test_get_abi_inputs(function_abi, arg_values, expected):
 )
 def test_collapse_if_tuple(abi_type, expected):
     assert collapse_if_tuple(abi_type) == expected
+
+
+@pytest.mark.parametrize(
+    'tuple_type, expected',
+    [
+        ('(uint256,uint256)', ['uint256', 'uint256']),
+        ('(uint256,(uint256,uint256),uint256)', ['uint256', '(uint256,uint256)', 'uint256']),
+        ('((uint256,uint256),uint256)', ['(uint256,uint256)', 'uint256']),
+        ('(uint256,(uint256,uint256))', ['uint256', '(uint256,uint256)']),
+        ('(((uint256)))', ['((uint256))']),
+    ]
+)
+def test_get_tuple_component_types(tuple_type, expected):
+    assert get_tuple_component_types(tuple_type) == expected

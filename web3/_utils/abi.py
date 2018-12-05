@@ -189,24 +189,44 @@ except ImportError:
         return base + str(sub) + ''.join(map(repr, arrlist))
 
 
+def get_tuple_component_types(tuple_type):
+    component_types = []
+    components_csv = tuple_type[1:-1]
+    open_paren_index = components_csv.find("(")
+    close_paren_index = components_csv.rfind(")")
+    if open_paren_index != -1 and close_paren_index != -1:
+        before_open_paren = components_csv[0:open_paren_index]
+        parenthesized = components_csv[open_paren_index:close_paren_index + 1]
+        after_close_paren = components_csv[close_paren_index + 1:]
+        if before_open_paren:
+            component_types.extend(before_open_paren.strip(",").split(","))
+        component_types.append(parenthesized)
+        if after_close_paren:
+            component_types.extend(after_close_paren.strip(",").split(","))
+    else:
+        component_types = components_csv.split(",")
+    return component_types
+
+
 def is_encodable(_type, value):
     if not isinstance(_type, str):
         raise ValueError("is_encodable only accepts type strings")
 
     if _type[0] == "(":  # it's a tuple. check encodability of each component
-        components = _type.strip("()").split(",")
+        component_types = get_tuple_component_types(_type)
+
         values = value
         if not is_list_like(values):
             return False
 
-        if len(components) != len(values):
+        if len(component_types) != len(values):
             return False
 
         return all(
             [
-                is_encodable(component, value)
-                for component, value
-                in zip(components, values)
+                is_encodable(component_type, value)
+                for component_type, value
+                in zip(component_types, values)
             ]
         )
 

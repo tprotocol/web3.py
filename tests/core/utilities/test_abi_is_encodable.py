@@ -66,6 +66,10 @@ from web3._utils.abi import (
         ([0], '(address,uint256)', False),
         (['0x' + '00' * 20], '(uint256)', False),
         ([], '(address)', False),
+        ((1, (2, 3), 0), '(uint256,(uint256,uint256),uint256)', True),
+        ((0, (2, 3)), '(uint256,(uint256,uint256))', True),
+        (((2, 3), 0), '((uint256,uint256),uint256)', True),
+        ((((0,),),), '(((uint256)))', True),
     ),
 )
 def test_is_encodable(value, _type, expected):
