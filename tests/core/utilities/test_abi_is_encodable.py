@@ -61,6 +61,7 @@ from web3._utils.abi import (
         (b'', 'string', True),
         (b'anything', 'string', True),
         (b'\x80', 'string', False),  # bytes that cannot be decoded with utf-8 are invalid
+        # tuple
         (['0x' + '00' * 20, 0], '(address,uint256)', True),
         (('0x' + '00' * 20, 0), '(address,uint256)', True),
         ([0], '(address,uint256)', False),
@@ -70,6 +71,9 @@ from web3._utils.abi import (
         ((0, (2, 3)), '(uint256,(uint256,uint256))', True),
         (((2, 3), 0), '((uint256,uint256),uint256)', True),
         ((((0,),),), '(((uint256)))', True),
+        ([0, 1, 2, 3], 'uint256[]', True),
+        ([(0, 1), (2, 3)], '(uint256,uint256)[]', True),
+        ([(0, 1, 2), (3, 4, 5)], '(uint256,uint256,uint256)[]', True),
     ),
 )
 def test_is_encodable(value, _type, expected):

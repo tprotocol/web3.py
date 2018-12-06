@@ -229,9 +229,15 @@ def is_encodable(_type, value):
         raise ValueError("is_encodable only accepts type strings")
 
     if _type[0] == "(":  # it's a tuple. check encodability of each component
+        values = value
+
+        if _type.endswith("[]"):
+            return all(
+                [is_encodable(_type.rstrip("[]"), value) for value in values]
+            )
+
         component_types = get_tuple_component_types(_type)
 
-        values = value
         if not is_list_like(values):
             return False
 
