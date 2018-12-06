@@ -54,12 +54,8 @@ def get_abi_input_types(abi):
         return [collapse_if_tuple(abi_input) for abi_input in abi['inputs']]
 
 
-def collapse_if_tuple(abi_type):
-    """Converts an ABI tuple type to the format expected by eth_abi.
-
-    Returns the type Returns the parenthesized list of tuple component types,
-    as expected by eth_abi.  If `abi_type` is not a tuple, just returns its
-    type.
+def collapse_if_tuple(abi):
+    """Converts a tuple from a dict to a parenthesizd list of its types.
 
     >>> collapse_if_tuple(
     ...     {
@@ -68,20 +64,24 @@ def collapse_if_tuple(abi_type):
     ...             {'name': 'anInt', 'type': 'uint256'},
     ...             {'name': 'someBytes', 'type': 'bytes'},
     ...         ],
-    ...         'name': 'order',
     ...         'type': 'tuple',
     ...     }
     ... )
     '(address,uint256,bytes)'
     """
-    if isinstance(abi_type["type"], str) and abi_type["type"] != 'tuple':
-        return abi_type["type"]
+    if isinstance(abi["type"], str) and not abi["type"].startswith('tuple'):
+        return abi["type"]
 
     component_types = [
-        collapse_if_tuple(component) for component in abi_type["components"]
+        collapse_if_tuple(component) for component in abi["components"]
     ]
 
-    return "(" + ",".join(component_types) + ")"
+    collapsed = "(" + ",".join(component_types) + ")"
+
+    if abi["type"].endswith("[]"):
+        collapsed += "[]"
+
+    return collapsed
 
 
 def get_abi_output_types(abi):

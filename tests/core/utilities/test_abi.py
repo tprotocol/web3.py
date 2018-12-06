@@ -223,7 +223,6 @@ def test_get_abi_inputs(function_abi, arg_values, expected):
                     {'name': 'anInt', 'type': 'uint256'},
                     {'name': 'someBytes', 'type': 'bytes'},
                 ],
-                'name': 'order',
                 'type': 'tuple',
             },
             '(address,uint256,bytes)'
@@ -242,10 +241,20 @@ def test_get_abi_inputs(function_abi, arg_values, expected):
                         ]
                     }
                 ],
-                'name': 'order',
                 'type': 'tuple',
             },
             '(address,uint256,bytes,(uint256))'
+        ),
+        (
+            {
+                "type": "tuple[]",
+                "components": [
+                    {"name": "anAddress", "type": "address"},
+                    {"name": "anInt", "type": "uint256"},
+                    {"name": "someBytes", "type": "bytes"},
+                ],
+            },
+            "(address,uint256,bytes)[]"
         ),
     ]
 )
