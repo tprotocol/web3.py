@@ -8,13 +8,13 @@ from eth_abi import (
     is_encodable as eth_abi_is_encodable,
 )
 from eth_utils import (
-    collapse_if_tuple,
     is_hex,
     is_list_like,
     to_bytes,
     to_text,
     to_tuple,
 )
+from eth_utils.abi import collapse_if_tuple
 
 from web3._utils.ens import (
     is_ens_name,
