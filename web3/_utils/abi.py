@@ -14,7 +14,9 @@ from eth_utils import (
     to_text,
     to_tuple,
 )
-from eth_utils.abi import collapse_if_tuple
+from eth_utils.abi import (
+    collapse_if_tuple,
+)
 
 from web3._utils.ens import (
     is_ens_name,
