@@ -8,6 +8,7 @@ from eth_abi import (
     is_encodable as eth_abi_is_encodable,
 )
 from eth_utils import (
+    collapse_if_tuple,
     is_hex,
     is_list_like,
     to_bytes,
@@ -52,36 +53,6 @@ def get_abi_input_types(abi):
         return []
     else:
         return [collapse_if_tuple(abi_input) for abi_input in abi['inputs']]
-
-
-def collapse_if_tuple(abi):
-    """Converts a tuple from a dict to a parenthesizd list of its types.
-
-    >>> collapse_if_tuple(
-    ...     {
-    ...         'components': [
-    ...             {'name': 'anAddress', 'type': 'address'},
-    ...             {'name': 'anInt', 'type': 'uint256'},
-    ...             {'name': 'someBytes', 'type': 'bytes'},
-    ...         ],
-    ...         'type': 'tuple',
-    ...     }
-    ... )
-    '(address,uint256,bytes)'
-    """
-    if isinstance(abi["type"], str) and not abi["type"].startswith('tuple'):
-        return abi["type"]
-
-    component_types = [
-        collapse_if_tuple(component) for component in abi["components"]
-    ]
-
-    collapsed = "(" + ",".join(component_types) + ")"
-
-    if abi["type"].endswith("[]"):
-        collapsed += "[]"
-
-    return collapsed
 
 
 def get_abi_output_types(abi):
